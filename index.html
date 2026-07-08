@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mindful Breathing - Guided Relaxation & Meditation Exercise</title>
+    <meta name="description" content="Improve focus and reduce stress with our customizable guided mindful breathing exercises. Set your own inhale, hold, and exhale durations for a perfect meditation experience.">
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="layout">
+        <main class="app-container">
+            <header>
+                <h1>Mindful Breathing</h1>
+            </header>
+
+            <div class="visualizer-wrapper">
+                <div class="circle-content">
+                    <div class="status-row">
+                        <div id="phase-text" class="phase-text">Ready</div>
+                        <div id="time-left" class="time-left">0</div>
+                        <div class="phase-text lap-text">LAP: <span id="lap-count">0</span></div>
+                    </div>  
+                </div> <!-- FIXED: Closed circle-content properly -->
+
+                <section class="breathing-visualizer">
+                    <div class="outer-circle">
+                        <div class="inner-circle" id="inner-circle"></div>
+                    </div>
+                </section>
+            </div>
+
+            <section class="controls-section">
+                <div class="breathing-controls-row">
+                    <div class="input-group">
+                        <label for="in-sec">Breathe In</label>
+                        <input type="number" id="in-sec" value="4" min="1">
+                    </div>
+                    <div class="input-group">
+                        <label for="hold-in-sec">Hold</label>
+                        <input type="number" id="hold-in-sec" value="4" min="0">
+                    </div>
+                    <div class="input-group">
+                        <label for="out-sec">Breathe Out</label>
+                        <input type="number" id="out-sec" value="4" min="1">
+                    </div>
+                    <div class="input-group">
+                        <label for="hold-out-sec">Hold</label>
+                        <input type="number" id="hold-out-sec" value="4" min="0">
+                    </div>
+                </div>
+            
+                <div class="button-row">
+                    <button id="set-btn" class="btn primary" type="button">Set</button>
+                    <button id="reset-btn" class="btn primary" type="button">Reset</button>
+                </div>
+            
+                <div class="action-buttons">
+                    <button id="start-btn" class="btn primary" type="button">START</button>
+                    <button id="stop-btn" class="btn primary" type="button" disabled>STOP</button>
+                </div>
+            </section>       
+        </main>
+    </div>
+
+    <div id="alert-modal" class="modal hidden">
+        <div class="modal-content">
+            <h2>Congratulations! 🎉</h2>
+            <p id="alert-message"></p>
+            <button id="close-modal-btn" class="btn primary">Close</button>
+        </div>
+    </div>
+
+    <script src="script.js" defer></script>
+</body>
+</html>
