@@ -1,0 +1,5 @@
+title: Mindful Breathing
+description: Guided relaxation and meditation exercises for calm focus.
+theme: minima
+plugins:
+  - jekyll-feed

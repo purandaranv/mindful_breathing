@@ -1,0 +1,17 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "chrome",
+            "request": "launch",
+            "name": "Launch Jekyll site in Chrome",
+            "url": "http://127.0.0.1:4000",
+            "webRoot": "${workspaceFolder}",
+            "sourceMaps": true,
+            "runtimeExecutable": "google-chrome",
+            "runtimeArgs": [
+                "--new-window"
+            ]
+        }
+    ]
+}
