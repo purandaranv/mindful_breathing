@@ -1,77 +1,948 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Mindful Breathing - Guided Relaxation & Meditation Exercise</title>
-    <meta name="description" content="Improve focus and reduce stress with our customizable guided mindful breathing exercises. Set your own inhale, hold, and exhale durations for a perfect meditation experience.">
-    <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
-</head>
-<body>
+    <meta
+      name="description"
+      content="Improve focus and reduce stress with our customizable guided mindful breathing exercises. Set your own inhale, hold, and exhale durations for a perfect meditation experience."
+    />
+    <style>
+      :root {
+        --bg-color: #0f172a; /* Slate 900 */
+        --surface: rgba(30, 41, 59, 0.7);
+        --surface-border: rgba(255, 255, 255, 0.1);
+        --primary: #38bdf8; /* Sky 400 */
+        --primary-hover: #0ea5e9;
+        --danger: #f43f5e;
+        --danger-hover: #e11d48;
+        --text-main: #f8fafc;
+        --text-muted: #94a3b8;
+        --ring-bg: rgba(255, 255, 255, 0.05);
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        font-family:
+          system-ui,
+          -apple-system,
+          BlinkMacSystemFont,
+          "Segoe UI",
+          Roboto,
+          Helvetica,
+          Arial,
+          sans-serif,
+          "Apple Color Emoji",
+          "Segoe UI Emoji",
+          "Segoe UI Symbol";
+      }
+
+      body {
+        background-color: var(--bg-color);
+        background-image: radial-gradient(
+          circle at 50% 0%,
+          #1e293b 0%,
+          #0f172a 70%
+        );
+        color: var(--text-main);
+        min-height: 100dvh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        overflow-x: hidden;
+        padding: clamp(1rem, 2.5vw, 2rem);
+      }
+
+      .layout {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+        max-width: 1200px;
+        padding: 0;
+        min-height: 100%;
+      }
+
+      .app-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: clamp(1.5rem, 4vw, 3.2rem);
+        width: min(100%, 760px);
+        position: relative;
+        z-index: 1;
+      }
+
+      header h1 {
+        font-size: clamp(1.8rem, 4vw, 2.8rem);
+        font-weight: 300;
+        letter-spacing: 2px;
+        text-align: center;
+        background: linear-gradient(135deg, #e0f2fe, #38bdf8);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+
+      .visualizer-wrapper {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1.2rem;
+        width: 100%;
+        padding-bottom: 0.25rem;
+      }
+
+      .breathing-visualizer {
+        position: relative;
+        width: min(78vw, 320px);
+        max-width: 100%;
+        aspect-ratio: 1 / 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-bottom: 0.2rem;
+        isolation: isolate;
+      }
+
+      .outer-circle {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        background: rgba(56, 189, 248, 0.1);
+        border: 2px solid rgba(56, 189, 248, 0.2);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        box-shadow: inset 0 0 40px rgba(56, 189, 248, 0.05);
+        transition: transform 0.25s ease;
+        transform-origin: center;
+      }
+
+      .outer-circle.is-rotating {
+        animation: outer-spin 1.8s linear infinite;
+      }
+
+      @keyframes outer-spin {
+        from {
+          transform: rotate(0deg);
+        }
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      .inner-circle {
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        background: #0ea5e9;
+        box-shadow: 0 0 24px rgba(14, 165, 233, 0.45);
+        transform: scale(0.1); /* Idle tiny size */
+        transform-origin: center;
+        will-change: transform;
+
+        cursor: pointer;
+        user-select: none;
+        -webkit-tap-highlight-color: transparent;
+        touch-action: manipulation;
+      }
+
+      .circle-content {
+        width: min(100%, 340px);
+        text-align: center;
+        background: rgba(15, 23, 42, 0.4);
+        padding: clamp(0.65rem, 2vw, 1rem) clamp(1rem, 3vw, 2rem);
+        border-radius: 16px;
+        backdrop-filter: blur(6px);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+      }
+
+      .phase-text {
+        font-size: clamp(0.9rem, 2vw, 1.1rem);
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        color: var(--primary);
+        margin-bottom: 0.2rem;
+        text-shadow: 0 0 8px rgba(56, 189, 248, 0.4);
+      }
+
+      .time-left {
+        font-size: clamp(1.6rem, 4vw, 2.2rem);
+        font-weight: 300;
+      }
+
+      .controls-section {
+        width: min(100%, 520px);
+        max-width: 100%;
+        background: var(--surface);
+        border: 1px solid var(--surface-border);
+        backdrop-filter: blur(12px);
+        border-radius: 20px;
+        padding: clamp(0.85rem, 2.2vw, 1.4rem);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: clamp(0.8rem, 2vw, 1.1rem);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+        position: relative;
+        z-index: 2;
+      }
+
+      .breathing-controls-row {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: clamp(0.75rem, 2vw, 1rem);
+        align-items: end;
+        width: 100%;
+      }
+
+      .button-row {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        width: 100%;
+      }
+
+      .input-group {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+        min-width: 0;
+      }
+
+      .input-group label {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+
+      .input-group input {
+        width: 100%;
+        max-width: 90px;
+        background: rgba(0, 0, 0, 0.25);
+        border: 1px solid var(--surface-border);
+        color: var(--text-main);
+        padding: 0.6rem;
+        border-radius: 8px;
+        text-align: center;
+        font-size: 1.25rem;
+        outline: none;
+        transition:
+          border-color 0.3s,
+          box-shadow 0.3s;
+      }
+
+      .input-group input:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 10px rgba(56, 189, 248, 0.2);
+      }
+
+      .btn {
+        padding: 0.8rem 1.8rem;
+        border: none;
+        border-radius: 12px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        touch-action: manipulation;
+        min-height: 48px;
+      }
+
+      .btn:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+      }
+
+      .btn.primary {
+        background: var(--primary);
+        color: #0f172a;
+        padding: 0.8rem 1.8rem;
+      }
+
+      .btn.primary:hover:not(:disabled) {
+        background: var(--primary-hover);
+        box-shadow: 0 0 15px rgba(56, 189, 248, 0.4);
+        transform: translateY(-2px);
+      }
+
+      .btn.secondary {
+        background: rgba(255, 255, 255, 0.1);
+        color: var(--text-main);
+      }
+
+      body.is-fullscreen .layout {
+        padding: 0.5rem;
+      }
+
+      body.is-fullscreen .app-container {
+        gap: 1rem;
+      }
+
+      body.is-fullscreen .controls-section {
+        padding: 1rem;
+        border-radius: 16px;
+      }
+
+      body.is-fullscreen .breathing-visualizer {
+        width: min(70vw, 250px);
+      }
+
+      .btn.secondary:hover:not(:disabled) {
+        background: rgba(255, 255, 255, 0.2);
+        transform: translateY(-2px);
+      }
+
+      .btn.danger {
+        background: transparent;
+        border: 1px solid var(--danger);
+        color: var(--danger);
+        width: 100%;
+      }
+
+      .btn.danger:hover:not(:disabled) {
+        background: var(--danger);
+        color: #fff;
+        box-shadow: 0 0 15px rgba(244, 63, 94, 0.4);
+        transform: translateY(-2px);
+      }
+
+      .lap-display {
+        font-size: 1.5rem;
+        font-weight: 300;
+        letter-spacing: 2px;
+        background: rgba(0, 0, 0, 0.25);
+        padding: 0.75rem 2.5rem;
+        border-radius: 12px;
+        border: 1px solid var(--surface-border);
+      }
+
+      .lap-display span {
+        font-weight: 600;
+        color: var(--primary);
+      }
+
+      .action-buttons {
+        display: flex;
+        gap: 1rem;
+        width: 100%;
+      }
+
+      .action-buttons .btn {
+        flex: 1 1 0;
+        min-width: 120px;
+      }
+
+      .bottom-row {
+        display: flex;
+        justify-content: center;
+        width: 100%;
+      }
+
+      .bottom-row .btn {
+        width: min(100%, 170px);
+      }
+
+      /* Modal */
+      .modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(15, 23, 42, 0.85);
+        backdrop-filter: blur(8px);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 100;
+        opacity: 1;
+        transition: opacity 0.3s ease;
+      }
+
+      .modal.hidden {
+        opacity: 0;
+        pointer-events: none;
+      }
+
+      .modal-content {
+        background: var(--surface);
+        border: 1px solid var(--surface-border);
+        padding: 3rem;
+        border-radius: 24px;
+        text-align: center;
+        max-width: 400px;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+        transform: translateY(0);
+        transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      }
+
+      .modal.hidden .modal-content {
+        transform: translateY(30px);
+      }
+
+      .modal-content h2 {
+        color: var(--primary);
+        margin-bottom: 1rem;
+        font-size: 2rem;
+      }
+
+      .modal-content p {
+        margin-bottom: 2rem;
+        line-height: 1.6;
+        color: var(--text-main);
+        font-size: 1.1rem;
+      }
+
+      /* Responsive adjustments */
+      @media (max-width: 700px) {
+        body {
+          align-items: flex-start;
+          padding: 0.75rem;
+        }
+
+        .btn {
+          min-height: 50px;
+          padding: 0.8rem 1rem;
+        }
+
+        .layout {
+          min-height: auto;
+        }
+
+        .breathing-visualizer {
+          width: min(84vw, 300px);
+        }
+
+        .breathing-controls-row {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 0.75rem;
+        }
+
+        .input-group input {
+          max-width: none;
+          font-size: 1rem;
+          padding: 0.5rem;
+        }
+
+        .button-row,
+        .action-buttons {
+          flex-direction: column;
+        }
+
+        .button-row .btn,
+        .action-buttons .btn {
+          width: 100%;
+          min-width: 0;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .controls-section {
+          padding: 1rem;
+          border-radius: 18px;
+        }
+
+        header h1 {
+          font-size: 1.8rem;
+        }
+
+        .breathing-controls-row {
+          grid-template-columns: 1fr 1fr;
+          gap: 0.6rem;
+        }
+
+        .input-group label {
+          font-size: 0.65rem;
+        }
+
+        .input-group input {
+          font-size: 0.95rem;
+          padding: 0.45rem;
+        }
+
+        .btn {
+          padding: 0.75rem 0.9rem;
+          font-size: 0.9rem;
+          min-height: 52px;
+        }
+
+        .modal-content {
+          padding: 1.5rem;
+          margin: 1rem;
+          border-radius: 18px;
+        }
+      }
+    </style>
+  </head>
+  <body>
     <div class="layout">
-        <main class="app-container">
-            <header>
-                <h1>Mindful Breathing</h1>
-            </header>
+      <main class="app-container">
+        <header>
+          <h1>Mindful Breathing</h1>
+        </header>
 
-            <div class="visualizer-wrapper">
-                <div class="circle-content">
-                    <div class="status-row">
-                        <div id="phase-text" class="phase-text">Ready</div>
-                        <div id="time-left" class="time-left">0</div>
-                        <div class="phase-text lap-text">LAP: <span id="lap-count">0</span></div>
-                    </div>  
-                </div> <!-- FIXED: Closed circle-content properly -->
-
-                <section class="breathing-visualizer">
-                    <div class="outer-circle">
-                        <div class="inner-circle" id="inner-circle" tabindex="0" role="button" aria-label="Start or stop breathing session"></div>
-                    </div>
-                </section>
+        <div class="visualizer-wrapper">
+          <div class="circle-content">
+            <div class="status-row">
+              <div id="phase-text" class="phase-text">Ready</div>
+              <div id="time-left" class="time-left">0</div>
+              <div class="phase-text lap-text">
+                LAP: <span id="lap-count">0</span>
+              </div>
             </div>
+          </div>
+          <!-- FIXED: Closed circle-content properly -->
 
-            <section class="controls-section">
-                <div class="breathing-controls-row">
-                    <div class="input-group">
-                        <label for="in-sec">Breathe In</label>
-                        <input type="number" id="in-sec" value="4" min="1">
-                    </div>
-                    <div class="input-group">
-                        <label for="hold-in-sec">Hold</label>
-                        <input type="number" id="hold-in-sec" value="4" min="0">
-                    </div>
-                    <div class="input-group">
-                        <label for="out-sec">Breathe Out</label>
-                        <input type="number" id="out-sec" value="4" min="1">
-                    </div>
-                    <div class="input-group">
-                        <label for="hold-out-sec">Hold</label>
-                        <input type="number" id="hold-out-sec" value="4" min="0">
-                    </div>
-                </div>
-            
-                <div class="button-row">
-                    <button id="set-btn" class="btn primary" type="button">Set</button>
-                    <button id="reset-btn" class="btn primary" type="button">Reset</button>
-                </div>
+          <section class="breathing-visualizer">
+            <div class="outer-circle">
+              <div
+                class="inner-circle"
+                id="inner-circle"
+                tabindex="0"
+                role="button"
+                aria-label="Start or stop breathing session"
+              ></div>
+            </div>
+          </section>
+        </div>
 
-                <div class="action-buttons">
-                    <button id="start-btn" class="btn primary" type="button">START</button>
-                    <button id="stop-btn" class="btn primary" type="button" disabled>STOP</button>
-                </div>
-            </section>       
-        </main>
+        <section class="controls-section">
+          <div class="breathing-controls-row">
+            <div class="input-group">
+              <label for="in-sec">Breathe In</label>
+              <input type="number" id="in-sec" value="4" min="1" />
+            </div>
+            <div class="input-group">
+              <label for="hold-in-sec">Hold</label>
+              <input type="number" id="hold-in-sec" value="4" min="0" />
+            </div>
+            <div class="input-group">
+              <label for="out-sec">Breathe Out</label>
+              <input type="number" id="out-sec" value="4" min="1" />
+            </div>
+            <div class="input-group">
+              <label for="hold-out-sec">Hold</label>
+              <input type="number" id="hold-out-sec" value="4" min="0" />
+            </div>
+          </div>
+
+          <div class="button-row">
+            <button id="set-btn" class="btn primary" type="button">Set</button>
+            <button id="reset-btn" class="btn primary" type="button">
+              Reset
+            </button>
+          </div>
+
+          <div class="action-buttons">
+            <button id="start-btn" class="btn primary" type="button">
+              START
+            </button>
+            <button id="stop-btn" class="btn primary" type="button" disabled>
+              STOP
+            </button>
+          </div>
+        </section>
+      </main>
     </div>
 
     <div id="alert-modal" class="modal hidden">
-        <div class="modal-content">
-            <h2>Congratulations! 🎉</h2>
-            <p id="alert-message"></p>
-            <button id="close-modal-btn" class="btn primary">Close</button>
-        </div>
+      <div class="modal-content">
+        <h2>Congratulations! 🎉</h2>
+        <p id="alert-message"></p>
+        <button id="close-modal-btn" class="btn primary">Close</button>
+      </div>
     </div>
 
-    <script src="script.js" defer></script>
-</body>
+    <script>
+      let appInitialized = false;
+
+      function initApp() {
+        if (appInitialized) return;
+        appInitialized = true;
+
+        // UI Elements
+        const inSecInput = document.getElementById("in-sec");
+        const holdInSecInput = document.getElementById("hold-in-sec");
+        const outSecInput = document.getElementById("out-sec");
+        const holdOutSecInput = document.getElementById("hold-out-sec");
+
+        const setBtn = document.getElementById("set-btn");
+        const resetBtn = document.getElementById("reset-btn");
+        const startBtn = document.getElementById("start-btn");
+        const stopBtn = document.getElementById("stop-btn");
+        const lapCountEl = document.getElementById("lap-count");
+        const phaseTextEl = document.getElementById("phase-text");
+        const timeLeftEl = document.getElementById("time-left");
+        const innerCircle = document.getElementById("inner-circle");
+        const outerCircle = document.querySelector(".outer-circle");
+        const breathingVisualizer = document.querySelector(
+          ".breathing-visualizer",
+        );
+
+        // Modal
+        const alertModal = document.getElementById("alert-modal");
+        const alertMessage = document.getElementById("alert-message");
+        const closeModalBtn = document.getElementById("close-modal-btn");
+
+        // State
+        let isRunning = false;
+        let lapCount = 0;
+        let sessionStartTime = 0;
+        let animationFrameId = null;
+
+        let inDuration = 4000;
+        let holdInDuration = 4000;
+        let outDuration = 4000;
+        let holdOutDuration = 4000;
+
+        let currentPhase = "idle"; // 'in', 'hold-in', 'out', 'hold-out'
+        let phaseStartTime = 0;
+
+        function setCircleScale(scale) {
+          innerCircle.style.transform = `scale(${scale})`;
+        }
+
+        function setOuterRotation(isRotating) {
+          outerCircle.classList.toggle("is-rotating", isRotating);
+        }
+
+        function init() {
+          setBtn.addEventListener("click", readInputs);
+          startBtn.addEventListener("click", startBreathing);
+          stopBtn.addEventListener("click", stopBreathing);
+          resetBtn.addEventListener("click", resetSettings);
+          closeModalBtn.addEventListener("click", () => {
+            alertModal.classList.add("hidden");
+          });
+
+          let clickCount = 0;
+          let clickTimer = null;
+
+          // Mobile-friendly start/stop:
+          // - Tap: start/stop (depending on current state)
+          // - Press & hold (250ms): stop
+          // - Uses pointer events so it works reliably on touch devices.
+          let holdTimer = null;
+          const HOLD_TO_STOP_MS = 250;
+          let isPointerDown = false;
+
+          function clearHoldTimer() {
+            if (holdTimer) {
+              clearTimeout(holdTimer);
+              holdTimer = null;
+            }
+          }
+
+          innerCircle.addEventListener(
+            "pointerdown",
+            (event) => {
+              // Don’t start while interacting with inputs.
+              if (isRunning && event.isPrimary === false) return;
+
+              isPointerDown = true;
+              clearHoldTimer();
+
+              // Prevent double-tap zoom / page gesture interference.
+              // (Will not block scrolling elsewhere.)
+              event.preventDefault();
+
+              holdTimer = setTimeout(() => {
+                if (isPointerDown && isRunning) {
+                  stopBreathing();
+                }
+              }, HOLD_TO_STOP_MS);
+            },
+            { passive: false },
+          );
+
+          innerCircle.addEventListener("pointerup", () => {
+            isPointerDown = false;
+            clearHoldTimer();
+
+            // If we released quickly (tap), treat as toggle.
+            if (!isRunning) {
+              startBreathing();
+            } else {
+              stopBreathing();
+            }
+          });
+
+          innerCircle.addEventListener("pointercancel", () => {
+            isPointerDown = false;
+            clearHoldTimer();
+          });
+
+          // Desktop fallback (mouse): single click starts; double click stops.
+          innerCircle.addEventListener("click", () => {
+            clickCount += 1;
+
+            if (clickTimer) {
+              clearTimeout(clickTimer);
+            }
+
+            clickTimer = setTimeout(() => {
+              if (clickCount === 1 && !isPointerDown) {
+                startBreathing();
+              }
+              clickCount = 0;
+              clickTimer = null;
+            }, 250);
+          });
+
+          innerCircle.addEventListener("dblclick", (event) => {
+            event.preventDefault();
+            if (clickTimer) {
+              clearTimeout(clickTimer);
+              clickTimer = null;
+            }
+            clickCount = 0;
+            stopBreathing();
+          });
+
+          innerCircle.addEventListener("keydown", (event) => {
+            if (event.key === "Enter" || event.key === " ") {
+              event.preventDefault();
+              if (isRunning) {
+                stopBreathing();
+              } else {
+                startBreathing();
+              }
+            }
+          });
+
+          // Initial setup
+          setCircleScale(0.1);
+        }
+
+        function readInputs() {
+          if (isRunning) return;
+
+          // FIXED: Safe parsing to prevent NaN calculations breaking loops
+          const valIn = parseFloat(inSecInput.value);
+          const valHoldIn = parseFloat(holdInSecInput.value);
+          const valOut = parseFloat(outSecInput.value);
+          const valHoldOut = parseFloat(holdOutSecInput.value);
+
+          inDuration = (isNaN(valIn) || valIn < 1 ? 4 : valIn) * 1000;
+          holdInDuration =
+            (isNaN(valHoldIn) || valHoldIn < 0 ? 0 : valHoldIn) * 1000;
+          outDuration = (isNaN(valOut) || valOut < 1 ? 4 : valOut) * 1000;
+          holdOutDuration =
+            (isNaN(valHoldOut) || valHoldOut < 0 ? 0 : valHoldOut) * 1000;
+
+          // Visual feedback that it's set
+          setBtn.textContent = "Set ✓";
+          setTimeout(() => {
+            if (!isRunning) setBtn.textContent = "Set";
+          }, 1500);
+        }
+
+        function resetSettings() {
+          if (isRunning) return;
+          inSecInput.value = 4;
+          holdInSecInput.value = 4;
+          outSecInput.value = 4;
+          holdOutSecInput.value = 4;
+
+          inDuration = 4000;
+          holdInDuration = 4000;
+          outDuration = 4000;
+          holdOutDuration = 4000;
+
+          lapCount = 0;
+          lapCountEl.textContent = "0";
+          phaseTextEl.textContent = "Ready";
+          timeLeftEl.textContent = "0";
+          setCircleScale(0.1);
+          innerCircle.style.background = "#0ea5e9";
+          setBtn.textContent = "Set";
+        }
+
+        function handleFullscreenChange() {
+          document.body.classList.toggle(
+            "is-fullscreen",
+            Boolean(document.fullscreenElement),
+          );
+        }
+
+        function startBreathing() {
+          if (isRunning) return;
+
+          // Ensure inputs are read fresh in case they bypassed the Set button
+          readInputs();
+
+          isRunning = true;
+          setBtn.disabled = true;
+          inSecInput.disabled = true;
+          holdInSecInput.disabled = true;
+          outSecInput.disabled = true;
+          holdOutSecInput.disabled = true;
+          resetBtn.disabled = true;
+          startBtn.disabled = true;
+          stopBtn.disabled = false;
+
+          lapCount = 0;
+          lapCountEl.textContent = lapCount;
+
+          sessionStartTime = performance.now();
+          startPhase("in");
+
+          requestAnimationFrame(updateFrame);
+        }
+
+        function stopBreathing() {
+          if (!isRunning) return;
+
+          isRunning = false;
+          if (animationFrameId) {
+            cancelAnimationFrame(animationFrameId);
+            animationFrameId = null;
+          }
+
+          const totalElapsedSec = Math.floor(
+            (performance.now() - sessionStartTime) / 1000,
+          );
+
+          // Show modal summary
+          alertMessage.innerHTML = `You completed <strong>${lapCount}</strong> laps in <strong>${totalElapsedSec}</strong> seconds.<br><br>Great job focusing on your breath!`;
+          alertModal.classList.remove("hidden");
+
+          // Restore form control responsiveness
+          setBtn.disabled = false;
+          inSecInput.disabled = false;
+          holdInSecInput.disabled = false;
+          outSecInput.disabled = false;
+          holdOutSecInput.disabled = false;
+          resetBtn.disabled = false;
+          startBtn.disabled = false;
+          stopBtn.disabled = true;
+
+          phaseTextEl.textContent = "Ready";
+          timeLeftEl.textContent = "0";
+          setCircleScale(0.1);
+          innerCircle.style.background = "#0ea5e9";
+          setBtn.textContent = "Set";
+        }
+
+        function startPhase(phase) {
+          currentPhase = phase;
+          phaseStartTime = performance.now();
+
+          if (phase === "in") {
+            phaseTextEl.textContent = "Breathe In";
+            innerCircle.style.background = "#38bdf8"; // Sky blue
+            setOuterRotation(false);
+          } else if (phase === "hold-in") {
+            phaseTextEl.textContent = "Hold";
+            innerCircle.style.background = "#a78bfa"; // Purple
+            setOuterRotation(true);
+          } else if (phase === "out") {
+            phaseTextEl.textContent = "Breathe Out";
+            innerCircle.style.background = "#34d399"; // Emerald
+            setOuterRotation(false);
+          } else if (phase === "hold-out") {
+            phaseTextEl.textContent = "Hold";
+            innerCircle.style.background = "#f43f5e"; // Soft Coral/Red
+            setOuterRotation(true);
+          }
+        }
+
+        function updateFrame(timestamp) {
+          if (!isRunning) return;
+
+          let elapsed = timestamp - phaseStartTime;
+          let progress = 0;
+          let timeLeft = 0;
+
+          if (currentPhase === "in") {
+            progress = Math.min(elapsed / inDuration, 1);
+            timeLeft = Math.ceil((inDuration - elapsed) / 1000);
+
+            // Expand circle smoothly from 0.1 to 0.95 scale
+            const scale = 0.1 + progress * 0.85;
+            setCircleScale(scale);
+
+            if (progress >= 1) {
+              if (holdInDuration > 0) {
+                startPhase("hold-in");
+              } else {
+                startPhase("out");
+              }
+            }
+          } else if (currentPhase === "hold-in") {
+            progress = Math.min(elapsed / holdInDuration, 1);
+            timeLeft = Math.ceil((holdInDuration - elapsed) / 1000);
+
+            // Retain full structural size during internal hold
+            innerCircle.style.transform = "scale(0.95)";
+
+            if (progress >= 1) {
+              startPhase("out");
+            }
+          } else if (currentPhase === "out") {
+            progress = Math.min(elapsed / outDuration, 1);
+            timeLeft = Math.ceil((outDuration - elapsed) / 1000);
+
+            // Retract circle smoothly from 0.95 down to 0.1 scale
+            const scale = 0.95 - progress * 0.85;
+            setCircleScale(scale);
+
+            if (progress >= 1) {
+              if (holdOutDuration > 0) {
+                startPhase("hold-out");
+              } else {
+                lapCount++;
+                lapCountEl.textContent = lapCount;
+                startPhase("in");
+              }
+            }
+          } else if (currentPhase === "hold-out") {
+            progress = Math.min(elapsed / holdOutDuration, 1);
+            timeLeft = Math.ceil((holdOutDuration - elapsed) / 1000);
+
+            // Keep completely deflated during empty-lung hold
+            innerCircle.style.transform = "scale(0.1)";
+
+            if (progress >= 1) {
+              lapCount++;
+              lapCountEl.textContent = lapCount;
+              startPhase("in");
+            }
+          }
+
+          timeLeftEl.textContent = Math.max(0, timeLeft);
+
+          if (isRunning) {
+            animationFrameId = requestAnimationFrame(updateFrame);
+          }
+        }
+
+        document.addEventListener("fullscreenchange", handleFullscreenChange);
+        document.addEventListener("keydown", (event) => {
+          if (event.key === "Escape" && document.fullscreenElement) {
+            document.exitFullscreen?.();
+          }
+        });
+
+        handleFullscreenChange();
+
+        init();
+      }
+
+      document.addEventListener("DOMContentLoaded", initApp);
+      window.addEventListener("load", initApp);
+    </script>
+  </body>
 </html>
