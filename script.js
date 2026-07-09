@@ -48,9 +48,6 @@ function initApp() {
         outerCircle.classList.toggle('is-rotating', isRotating);
     }
 
-    function setVisualizerLoading(isLoading) {
-        breathingVisualizer.classList.toggle('is-loading', isLoading);
-    }
 
 
 
@@ -198,7 +195,6 @@ function initApp() {
         timeLeftEl.textContent = '0';
         setCircleScale(0.1);
         innerCircle.style.background = '#0ea5e9';
-        setVisualizerLoading(false);
         setBtn.textContent = 'Set';
     }
 
@@ -260,7 +256,6 @@ function initApp() {
         timeLeftEl.textContent = '0';
         setCircleScale(0.1);
         innerCircle.style.background = '#0ea5e9';
-        setVisualizerLoading(false);
         setBtn.textContent = 'Set';
     }
 
@@ -272,22 +267,18 @@ function initApp() {
             phaseTextEl.textContent = 'Breathe In';
             innerCircle.style.background = '#38bdf8'; // Sky blue
             setOuterRotation(false);
-            setVisualizerLoading(false);
         } else if (phase === 'hold-in') {
             phaseTextEl.textContent = 'Hold';
             innerCircle.style.background = '#a78bfa'; // Purple
             setOuterRotation(true);
-            setVisualizerLoading(true);
         } else if (phase === 'out') {
             phaseTextEl.textContent = 'Breathe Out';
             innerCircle.style.background = '#34d399'; // Emerald
             setOuterRotation(false);
-            setVisualizerLoading(false);
         } else if (phase === 'hold-out') {
             phaseTextEl.textContent = 'Hold';
             innerCircle.style.background = '#f43f5e'; // Soft Coral/Red
             setOuterRotation(true);
-            setVisualizerLoading(true);
         }
     }
 
