@@ -66,6 +66,57 @@ function initApp() {
         let clickCount = 0;
         let clickTimer = null;
 
+        // Mobile-friendly start/stop:
+        // - Tap: start/stop (depending on current state)
+        // - Press & hold (250ms): stop
+        // - Uses pointer events so it works reliably on touch devices.
+        let holdTimer = null;
+        const HOLD_TO_STOP_MS = 250;
+        let isPointerDown = false;
+
+        function clearHoldTimer() {
+            if (holdTimer) {
+                clearTimeout(holdTimer);
+                holdTimer = null;
+            }
+        }
+
+        innerCircle.addEventListener('pointerdown', (event) => {
+            // Don’t start while interacting with inputs.
+            if (isRunning && event.isPrimary === false) return;
+
+            isPointerDown = true;
+            clearHoldTimer();
+
+            // Prevent double-tap zoom / page gesture interference.
+            // (Will not block scrolling elsewhere.)
+            event.preventDefault();
+
+            holdTimer = setTimeout(() => {
+                if (isPointerDown && isRunning) {
+                    stopBreathing();
+                }
+            }, HOLD_TO_STOP_MS);
+        }, { passive: false });
+
+        innerCircle.addEventListener('pointerup', () => {
+            isPointerDown = false;
+            clearHoldTimer();
+
+            // If we released quickly (tap), treat as toggle.
+            if (!isRunning) {
+                startBreathing();
+            } else {
+                stopBreathing();
+            }
+        });
+
+        innerCircle.addEventListener('pointercancel', () => {
+            isPointerDown = false;
+            clearHoldTimer();
+        });
+
+        // Desktop fallback (mouse): single click starts; double click stops.
         innerCircle.addEventListener('click', () => {
             clickCount += 1;
 
@@ -74,7 +125,7 @@ function initApp() {
             }
 
             clickTimer = setTimeout(() => {
-                if (clickCount === 1) {
+                if (clickCount === 1 && !isPointerDown) {
                     startBreathing();
                 }
                 clickCount = 0;
@@ -92,6 +143,7 @@ function initApp() {
             stopBreathing();
         });
 
+
         innerCircle.addEventListener('keydown', (event) => {
             if (event.key === 'Enter' || event.key === ' ') {
                 event.preventDefault();
@@ -104,7 +156,7 @@ function initApp() {
         });
         
         // Initial setup
-        setCircleScale(0.2);
+        setCircleScale(0.1);
     }
 
     function readInputs() {
@@ -144,7 +196,7 @@ function initApp() {
         lapCountEl.textContent = '0';
         phaseTextEl.textContent = 'Ready';
         timeLeftEl.textContent = '0';
-        setCircleScale(0.2);
+        setCircleScale(0.1);
         innerCircle.style.background = '#0ea5e9';
         setVisualizerLoading(false);
         setBtn.textContent = 'Set';
@@ -206,7 +258,7 @@ function initApp() {
         
         phaseTextEl.textContent = 'Ready';
         timeLeftEl.textContent = '0';
-        setCircleScale(0.2);
+        setCircleScale(0.1);
         innerCircle.style.background = '#0ea5e9';
         setVisualizerLoading(false);
         setBtn.textContent = 'Set';
@@ -250,8 +302,8 @@ function initApp() {
             progress = Math.min(elapsed / inDuration, 1);
             timeLeft = Math.ceil((inDuration - elapsed) / 1000);
             
-            // Expand circle smoothly from 0.2 to 3.0 scale
-            const scale = 0.2 + (progress * 2.8);
+            // Expand circle smoothly from 0.1 to 0.95 scale
+            const scale = 0.1 + (progress * 0.85);
             setCircleScale(scale);
             
             if (progress >= 1) {
@@ -267,7 +319,7 @@ function initApp() {
             timeLeft = Math.ceil((holdInDuration - elapsed) / 1000);
             
             // Retain full structural size during internal hold
-            innerCircle.style.transform = 'scale(3.0)';
+            innerCircle.style.transform = 'scale(0.95)';
 
             if (progress >= 1) {
                 startPhase('out');
@@ -277,8 +329,8 @@ function initApp() {
             progress = Math.min(elapsed / outDuration, 1);
             timeLeft = Math.ceil((outDuration - elapsed) / 1000);
             
-            // Retract circle smoothly from 3.0 down to 0.2 scale
-            const scale = 3.0 - (progress * 2.8);
+            // Retract circle smoothly from 0.95 down to 0.1 scale
+            const scale = 0.95 - (progress * 0.85);
             setCircleScale(scale);
 
             if (progress >= 1) {
@@ -296,7 +348,7 @@ function initApp() {
             timeLeft = Math.ceil((holdOutDuration - elapsed) / 1000);
             
             // Keep completely deflated during empty-lung hold
-            innerCircle.style.transform = 'scale(0.2)';
+            innerCircle.style.transform = 'scale(0.1)';
 
             if (progress >= 1) {
                 lapCount++;

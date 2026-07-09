@@ -93,6 +93,7 @@ header h1 {
     50% {
         opacity: 0.4;
     }
+}
 
 .outer-circle {
     position: absolute;
@@ -123,15 +124,21 @@ header h1 {
 }
 
 .inner-circle {
-    width: 92px;
-    height: 92px;
+    width: 100%;
+    height: 100%;
     border-radius: 50%;
     background: #0ea5e9;
     box-shadow: 0 0 24px rgba(14, 165, 233, 0.45);
-    transform: scale(0.2); /* Idle tiny size */
+    transform: scale(0.1); /* Idle tiny size */
     transform-origin: center;
     will-change: transform;
+
+    cursor: pointer;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
 }
+
 
 .circle-content {
     width: min(100%, 340px);
@@ -278,10 +285,6 @@ body.is-fullscreen .breathing-visualizer {
     width: min(70vw, 250px);
 }
 
-body.is-fullscreen .inner-circle {
-    width: 84px;
-    height: 84px;
-}
 
 .btn.secondary:hover:not(:disabled) {
     background: rgba(255,255,255,0.2);
