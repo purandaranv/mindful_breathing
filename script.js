@@ -19,6 +19,7 @@ function initApp() {
     const timeLeftEl = document.getElementById('time-left');
     const innerCircle = document.getElementById('inner-circle');
     const outerCircle = document.querySelector('.outer-circle');
+    const breathingVisualizer = document.querySelector('.breathing-visualizer');
     
     // Modal
     const alertModal = document.getElementById('alert-modal');
@@ -46,6 +47,12 @@ function initApp() {
     function setOuterRotation(isRotating) {
         outerCircle.classList.toggle('is-rotating', isRotating);
     }
+
+    function setVisualizerLoading(isLoading) {
+        breathingVisualizer.classList.toggle('is-loading', isLoading);
+    }
+
+
 
     function init() {
         setBtn.addEventListener('click', readInputs);
@@ -98,7 +105,6 @@ function initApp() {
         
         // Initial setup
         setCircleScale(0.2);
-        setOuterRotation(false);
     }
 
     function readInputs() {
@@ -140,7 +146,7 @@ function initApp() {
         timeLeftEl.textContent = '0';
         setCircleScale(0.2);
         innerCircle.style.background = '#0ea5e9';
-        setOuterRotation(false);
+        setVisualizerLoading(false);
         setBtn.textContent = 'Set';
     }
 
@@ -202,6 +208,7 @@ function initApp() {
         timeLeftEl.textContent = '0';
         setCircleScale(0.2);
         innerCircle.style.background = '#0ea5e9';
+        setVisualizerLoading(false);
         setBtn.textContent = 'Set';
     }
 
@@ -213,18 +220,22 @@ function initApp() {
             phaseTextEl.textContent = 'Breathe In';
             innerCircle.style.background = '#38bdf8'; // Sky blue
             setOuterRotation(false);
+            setVisualizerLoading(false);
         } else if (phase === 'hold-in') {
             phaseTextEl.textContent = 'Hold';
             innerCircle.style.background = '#a78bfa'; // Purple
             setOuterRotation(true);
+            setVisualizerLoading(true);
         } else if (phase === 'out') {
             phaseTextEl.textContent = 'Breathe Out';
             innerCircle.style.background = '#34d399'; // Emerald
             setOuterRotation(false);
+            setVisualizerLoading(false);
         } else if (phase === 'hold-out') {
             phaseTextEl.textContent = 'Hold';
             innerCircle.style.background = '#f43f5e'; // Soft Coral/Red
             setOuterRotation(true);
+            setVisualizerLoading(true);
         }
     }
 
