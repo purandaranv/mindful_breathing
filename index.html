@@ -503,7 +503,6 @@
               </div>
             </div>
           </div>
-          <!-- FIXED: Closed circle-content properly -->
 
           <section class="breathing-visualizer">
             <div class="outer-circle">
@@ -572,7 +571,6 @@
         if (appInitialized) return;
         appInitialized = true;
 
-        // UI Elements
         const inSecInput = document.getElementById("in-sec");
         const holdInSecInput = document.getElementById("hold-in-sec");
         const outSecInput = document.getElementById("out-sec");
@@ -587,16 +585,11 @@
         const timeLeftEl = document.getElementById("time-left");
         const innerCircle = document.getElementById("inner-circle");
         const outerCircle = document.querySelector(".outer-circle");
-        const breathingVisualizer = document.querySelector(
-          ".breathing-visualizer",
-        );
 
-        // Modal
         const alertModal = document.getElementById("alert-modal");
         const alertMessage = document.getElementById("alert-message");
         const closeModalBtn = document.getElementById("close-modal-btn");
 
-        // State
         let isRunning = false;
         let lapCount = 0;
         let sessionStartTime = 0;
@@ -608,7 +601,7 @@
         let outDuration = 4000;
         let holdOutDuration = 4000;
 
-        let currentPhase = "idle"; // 'in', 'hold-in', 'out', 'hold-out'
+        let currentPhase = "idle";
         let phaseStartTime = 0;
 
         function setCircleScale(scale) {
@@ -642,7 +635,7 @@
         }
 
         function requestWakeLock() {
-          if (!("wakeLock" in navigator) || isRunning === false) return;
+          if (!("wakeLock" in navigator) || !isRunning) return;
           if (wakeLockSentinel !== null) return;
 
           navigator.wakeLock
@@ -661,9 +654,7 @@
         function releaseWakeLock() {
           if (!wakeLockSentinel) return;
 
-          wakeLockSentinel.release().catch(() => {
-            // Ignore release errors; screen lock is optional for the experience.
-          });
+          wakeLockSentinel.release().catch(() => {});
           wakeLockSentinel = null;
         }
 
@@ -678,11 +669,6 @@
 
           let clickCount = 0;
           let clickTimer = null;
-
-          // Mobile-friendly start/stop:
-          // - Tap: start/stop (depending on current state)
-          // - Press & hold (250ms): stop
-          // - Uses pointer events so it works reliably on touch devices.
           let holdTimer = null;
           const HOLD_TO_STOP_MS = 250;
           let isPointerDown = false;
@@ -697,14 +683,10 @@
           innerCircle.addEventListener(
             "pointerdown",
             (event) => {
-              // Don’t start while interacting with inputs.
               if (isRunning && event.isPrimary === false) return;
 
               isPointerDown = true;
               clearHoldTimer();
-
-              // Prevent double-tap zoom / page gesture interference.
-              // (Will not block scrolling elsewhere.)
               event.preventDefault();
 
               holdTimer = setTimeout(() => {
@@ -719,8 +701,6 @@
           innerCircle.addEventListener("pointerup", () => {
             isPointerDown = false;
             clearHoldTimer();
-
-            // If we released quickly (tap), treat as toggle.
             if (!isRunning) {
               startBreathing();
             } else {
@@ -733,13 +713,9 @@
             clearHoldTimer();
           });
 
-          // Desktop fallback (mouse): single click starts; double click stops.
           innerCircle.addEventListener("click", () => {
             clickCount += 1;
-
-            if (clickTimer) {
-              clearTimeout(clickTimer);
-            }
+            if (clickTimer) clearTimeout(clickTimer);
 
             clickTimer = setTimeout(() => {
               if (clickCount === 1 && !isPointerDown) {
@@ -771,14 +747,12 @@
             }
           });
 
-          // Initial setup
           setCircleScale(0.1);
         }
 
         function readInputs() {
           if (isRunning) return;
 
-          // FIXED: Safe parsing to prevent NaN calculations breaking loops
           const valIn = parseFloat(inSecInput.value);
           const valHoldIn = parseFloat(holdInSecInput.value);
           const valOut = parseFloat(outSecInput.value);
@@ -791,7 +765,6 @@
           holdOutDuration =
             (isNaN(valHoldOut) || valHoldOut < 0 ? 0 : valHoldOut) * 1000;
 
-          // Visual feedback that it's set
           setBtn.textContent = "Set ✓";
           setTimeout(() => {
             if (!isRunning) setBtn.textContent = "Set";
@@ -829,7 +802,6 @@
         function startBreathing() {
           if (isRunning) return;
 
-          // Ensure inputs are read fresh in case they bypassed the Set button
           readInputs();
 
           isRunning = true;
@@ -848,7 +820,6 @@
           sessionStartTime = performance.now();
           requestWakeLock();
           startPhase("in");
-
           requestAnimationFrame(updateFrame);
         }
 
@@ -870,11 +841,9 @@
             (performance.now() - sessionStartTime) / 1000,
           );
 
-          // Show modal summary
           alertMessage.innerHTML = `You completed <strong>${lapCount}</strong> laps in <strong>${totalElapsedSec}</strong> seconds.<br><br>Great job focusing on your breath!`;
           alertModal.classList.remove("hidden");
 
-          // Restore form control responsiveness
           setBtn.disabled = false;
           inSecInput.disabled = false;
           holdInSecInput.disabled = false;
@@ -898,19 +867,19 @@
 
           if (phase === "in") {
             phaseTextEl.textContent = "Breathe In";
-            innerCircle.style.background = "#38bdf8"; // Sky blue
+            innerCircle.style.background = "#38bdf8";
             setOuterRotation(false);
           } else if (phase === "hold-in") {
             phaseTextEl.textContent = "Hold";
-            innerCircle.style.background = "#a78bfa"; // Purple
+            innerCircle.style.background = "#a78bfa";
             setOuterRotation(true);
           } else if (phase === "out") {
             phaseTextEl.textContent = "Breathe Out";
-            innerCircle.style.background = "#34d399"; // Emerald
+            innerCircle.style.background = "#34d399";
             setOuterRotation(false);
           } else if (phase === "hold-out") {
             phaseTextEl.textContent = "Hold";
-            innerCircle.style.background = "#f43f5e"; // Soft Coral/Red
+            innerCircle.style.background = "#f43f5e";
             setOuterRotation(true);
           }
         }
@@ -925,8 +894,6 @@
           if (currentPhase === "in") {
             progress = Math.min(elapsed / inDuration, 1);
             timeLeft = Math.ceil((inDuration - elapsed) / 1000);
-
-            // Expand circle smoothly from 0.1 to 0.95 scale
             const scale = 0.1 + progress * 0.85;
             setCircleScale(scale);
 
@@ -940,8 +907,6 @@
           } else if (currentPhase === "hold-in") {
             progress = Math.min(elapsed / holdInDuration, 1);
             timeLeft = Math.ceil((holdInDuration - elapsed) / 1000);
-
-            // Retain full structural size during internal hold
             innerCircle.style.transform = "scale(0.95)";
 
             if (progress >= 1) {
@@ -950,8 +915,6 @@
           } else if (currentPhase === "out") {
             progress = Math.min(elapsed / outDuration, 1);
             timeLeft = Math.ceil((outDuration - elapsed) / 1000);
-
-            // Retract circle smoothly from 0.95 down to 0.1 scale
             const scale = 0.95 - progress * 0.85;
             setCircleScale(scale);
 
@@ -967,8 +930,6 @@
           } else if (currentPhase === "hold-out") {
             progress = Math.min(elapsed / holdOutDuration, 1);
             timeLeft = Math.ceil((holdOutDuration - elapsed) / 1000);
-
-            // Keep completely deflated during empty-lung hold
             innerCircle.style.transform = "scale(0.1)";
 
             if (progress >= 1) {
@@ -1008,7 +969,6 @@
         });
 
         handleFullscreenChange();
-
         init();
       }
 
