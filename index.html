@@ -601,6 +601,7 @@
         let lapCount = 0;
         let sessionStartTime = 0;
         let animationFrameId = null;
+        let wakeLockSentinel = null;
 
         let inDuration = 4000;
         let holdInDuration = 4000;
@@ -616,6 +617,54 @@
 
         function setOuterRotation(isRotating) {
           outerCircle.classList.toggle("is-rotating", isRotating);
+        }
+
+        function speakPhase(phase) {
+          if (!("speechSynthesis" in window)) return;
+
+          const spokenText =
+            phase === "in"
+              ? "Inhale"
+              : phase === "hold-in"
+                ? "Hold"
+                : phase === "out"
+                  ? "Exhale"
+                  : phase === "hold-out"
+                    ? "Hold"
+                    : "Ready";
+
+          window.speechSynthesis.cancel();
+          const utterance = new SpeechSynthesisUtterance(spokenText);
+          utterance.rate = 0.9;
+          utterance.pitch = 1;
+          utterance.volume = 1;
+          window.speechSynthesis.speak(utterance);
+        }
+
+        function requestWakeLock() {
+          if (!("wakeLock" in navigator) || isRunning === false) return;
+          if (wakeLockSentinel !== null) return;
+
+          navigator.wakeLock
+            .request("screen")
+            .then((wakeLock) => {
+              wakeLockSentinel = wakeLock;
+              wakeLockSentinel.addEventListener("release", () => {
+                wakeLockSentinel = null;
+              });
+            })
+            .catch(() => {
+              wakeLockSentinel = null;
+            });
+        }
+
+        function releaseWakeLock() {
+          if (!wakeLockSentinel) return;
+
+          wakeLockSentinel.release().catch(() => {
+            // Ignore release errors; screen lock is optional for the experience.
+          });
+          wakeLockSentinel = null;
         }
 
         function init() {
@@ -797,6 +846,7 @@
           lapCountEl.textContent = lapCount;
 
           sessionStartTime = performance.now();
+          requestWakeLock();
           startPhase("in");
 
           requestAnimationFrame(updateFrame);
@@ -809,6 +859,11 @@
           if (animationFrameId) {
             cancelAnimationFrame(animationFrameId);
             animationFrameId = null;
+          }
+
+          releaseWakeLock();
+          if ("speechSynthesis" in window) {
+            window.speechSynthesis.cancel();
           }
 
           const totalElapsedSec = Math.floor(
@@ -839,6 +894,7 @@
         function startPhase(phase) {
           currentPhase = phase;
           phaseStartTime = performance.now();
+          speakPhase(phase);
 
           if (phase === "in") {
             phaseTextEl.textContent = "Breathe In";
@@ -933,6 +989,21 @@
         document.addEventListener("keydown", (event) => {
           if (event.key === "Escape" && document.fullscreenElement) {
             document.exitFullscreen?.();
+          }
+        });
+
+        document.addEventListener("visibilitychange", () => {
+          if (document.visibilityState === "visible" && isRunning) {
+            requestWakeLock();
+          } else if (document.visibilityState !== "visible") {
+            releaseWakeLock();
+          }
+        });
+
+        window.addEventListener("beforeunload", () => {
+          releaseWakeLock();
+          if ("speechSynthesis" in window) {
+            window.speechSynthesis.cancel();
           }
         });
 
